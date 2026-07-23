@@ -13,3 +13,6 @@ wheels/
 .env
 db.sqlite3
 staticfiles/
+
+# AI stuff
+.claude/
