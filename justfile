@@ -2,8 +2,8 @@ set dotenv-load
 set shell := ["bash", "-uc"]
 
 ## Variables initialized from env
-host_url := env("HOST_URL", "localhost")
-local_port := env("LOCAL_PORT", "8000")
+host_url := env("HOST_URL", "django.localhost")
+host_port := env("HOST_PORT", "8000")
 
 ## Recipes
 
@@ -47,8 +47,8 @@ mmi:
 alias run := runserver
 # Run the development server
 [group('Django')]
-runserver host_url=host_url local_port=local_port:
-    just django runserver {{host_url}}:{{local_port}}
+runserver host_url=host_url host_port=host_port:
+    just django runserver {{host_url}}:{{host_port}}
 
 # Open a Django shell
 [group('Django')]
@@ -77,7 +77,7 @@ quality:
 generate_secret_key:
     uv_run python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 
-# Upgrate dependencies
+# Upgrade versions of dependencies
 [group('Utils')]
 upgrade:
     uv lock --upgrade

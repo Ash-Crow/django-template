@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -43,6 +44,10 @@ ALLOWED_HOSTS = (
     os.getenv("ALLOWED_HOSTS", "127.0.0.1,.localhost").replace(" ", "").split(",")
 )
 
+TESTING = "test" in sys.argv
+
+HOST_URL = os.getenv("HOST_URL", "localhost")
+
 
 # Application definition
 
@@ -55,6 +60,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
+# Only add this on a dev machine, outside of tests
+if not TESTING and DEBUG and "localhost" in HOST_URL:
+    INSTALLED_APPS += [
+        "debug_toolbar",
+    ]
+
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -64,6 +76,13 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# Only add this on a dev machine, outside of tests
+if not TESTING and DEBUG and "localhost" in HOST_URL:
+    MIDDLEWARE += [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
+
 
 ROOT_URLCONF = "config.urls"
 
