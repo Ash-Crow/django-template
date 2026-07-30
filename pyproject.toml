@@ -1,7 +1,7 @@
 [project]
 name = "django-template"
 version = "0.1.0"
-description = "Add your description here"
+description = "A basic template for Django projects"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -14,7 +14,47 @@ dependencies = [
 dev = [
     "black>=26.5.1",
     "coverage>=7.15.2",
+    "django-debug-toolbar>=7.0.0",
+    "djlint>=1.43.1",
     "ipython>=9.15.0",
     "pre-commit>=4.6.1",
     "ruff>=0.15.22",
 ]
+
+[tool.coverage.run]
+omit = [
+    "manage.py",
+    "config/settings_test.py",
+    "config/asgi.py",
+    "config/wsgi.py",
+    "*/__init__.py",
+    "*/migrations/*.py",
+    "*/tests/*.py",
+]
+
+[tool.djlint]
+line_break_after_multiline_tag = true
+max_blank_lines = 1
+ignore = "H006"
+indent = 2
+
+[tool.pyright]
+reportAttributeAccessIssue = false # too many false positives with Django models
+reportIncompatibleVariableOverride = false # too many false positives with Django models
+
+[tool.ruff]
+extend-exclude = [
+    ".pyenv",
+    ".pytest_cache",
+    ".vscode",
+    "build",
+    "site-packages",
+    "migrations",
+]
+
+[tool.ruff.lint]
+ignore = ["RUF012"]
+# RUF012 Mutable default value for class attribute
+
+[tool.ruff.lint.isort]
+combine-as-imports = true

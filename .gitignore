@@ -10,8 +10,10 @@ wheels/
 .venv
 
 # Project-related
+.coverage
 .env
 db.sqlite3
+htmlcov/
 staticfiles/
 
 # AI stuff
