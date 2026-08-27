@@ -65,17 +65,32 @@ coverage app="":
 # Run the unit tests
 [group('Tests')]
 test app="":
-    uv run python manage.py test {{app}}
+    just django test {{app}}
 
-# Make quality checks on the whole project
-[group('Utils')]
+# Run the Django system check framework
+[group('Code audit')]
+check +apps="":
+    just django check {{apps}}
+
+# Run a global pre-commit check
+[group('Code audit')]
 quality:
     uv run pre-commit run --all-files
+
+# Check that all imported packages are declared as dependencies (and vice versa)
+[group('Code audit')]
+deps-check:
+    uv run deptry .
+
+# Check dependency licenses for disallowed (e.g. GPL) licenses
+[group('Code audit')]
+licenses-check:
+    uv run pip-licenses
 
 # Generate a secret key
 [group('Utils')]
 generate_secret_key:
-    uv_run python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+    uv run python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 
 # Upgrade versions of dependencies
 [group('Utils')]

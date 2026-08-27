@@ -29,3 +29,6 @@ jobs:
     - name: 🧪 Run Tests - Django 6
       run: |
         uv run python manage.py test
+    - name: 💎 Run quality checks
+      run: |
+        uv run pre-commit run --all-files
