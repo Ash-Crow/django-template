@@ -72,10 +72,10 @@ test app="":
 check +apps="":
     just django check {{apps}}
 
-# Run a global pre-commit check
+# Run all git pre-commit hooks on every file
 [group('Code audit')]
 quality:
-    uv run pre-commit run --all-files
+    uv run prek run --all-files
 
 # Check that all imported packages are declared as dependencies (and vice versa)
 [group('Code audit')]
@@ -96,4 +96,4 @@ generate_secret_key:
 [group('Utils')]
 upgrade:
     uv lock --upgrade
-    uv run pre-commit autoupdate
+    uv run prek update --cooldown-days 7

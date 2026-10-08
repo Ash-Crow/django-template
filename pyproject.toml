@@ -19,9 +19,13 @@ dev = [
     "djlint>=1.43.1",
     "ipython>=9.15.0",
     "pip-licenses>=5.5.5",
-    "pre-commit>=4.6.1",
+    "prek>=0.5.4",
     "ruff>=0.15.22",
 ]
+
+[tool.uv]
+required-version = ">=0.9.17"
+exclude-newer = "7 days" # cooldown
 
 [tool.coverage.run]
 omit = [

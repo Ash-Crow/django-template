@@ -46,8 +46,10 @@ ALLOWED_HOSTS = (
 
 TESTING = "test" in sys.argv
 
-HOST_URL = os.getenv("HOST_URL", "localhost")
+HOST_URL = os.getenv("HOST_URL", "django.localhost")
+HOST_PORT = os.getenv("HOST_PORT", "8000")
 
+HOST_URL = f"{HOST_URL}:{HOST_PORT}"
 
 # Application definition
 
@@ -160,5 +162,5 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "static/"
