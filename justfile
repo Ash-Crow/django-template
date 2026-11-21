@@ -2,7 +2,7 @@ set dotenv-load
 set shell := ["bash", "-uc"]
 
 ## Variables initialized from env
-host_url := env("HOST_URL", "django.localhost")
+host_domain := env("HOST_DOMAIN", "django.localhost")
 host_port := env("HOST_PORT", "8000")
 # Exported so the Docker web container runs as the host user (see compose.yaml)
 export HOST_UID := env("HOST_UID", `id -u`)
@@ -51,8 +51,8 @@ mmi:
 alias run := runserver
 # Run the development server
 [group('Django')]
-runserver host_url=host_url host_port=host_port:
-    just django runserver {{host_url}}:{{host_port}}
+runserver host_domain=host_domain host_port=host_port:
+    just django runserver {{host_domain}}:{{host_port}}
 
 # Open a Django shell
 [group('Django')]
@@ -63,7 +63,7 @@ shell:
 [group('Docker')]
 docker-up:
     docker compose up --build -d --wait
-    @echo "Docker development server ready at http://{{host_url}}:{{host_port}}"
+    @echo "Docker development server ready at http://{{host_domain}}:{{host_port}}"
 
 # Stop the Docker dev stack
 [group('Docker')]

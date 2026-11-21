@@ -10,52 +10,51 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import os
 import sys
 from pathlib import Path
+from typing import cast
 
 import dj_database_url
-from dotenv import load_dotenv
-
-load_dotenv()
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-def getenv_bool(key: str, default: bool):
-    try:
-        value = os.environ[key]
-    except KeyError:
-        return default
-    return value.casefold() in ["1", "true"]
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = getenv_bool("DEBUG", False)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = (
-    os.getenv("ALLOWED_HOSTS", "127.0.0.1,.localhost").replace(" ", "").split(",")
+ALLOWED_HOSTS = cast(
+    list[str], config("ALLOWED_HOSTS", default="127.0.0.1,.localhost", cast=Csv())
 )
 
 TESTING = "test" in sys.argv
 
-HOST_URL = os.getenv("HOST_URL", "django.localhost")
-HOST_PORT = os.getenv("HOST_PORT", "8000")
+HOST_DOMAIN = config(
+    "HOST_DOMAIN", default=ALLOWED_HOSTS[0] if ALLOWED_HOSTS else "localhost"
+)
+HOST_PORT = config("HOST_PORT", default=8000, cast=int)
+HOST_PROTOCOL = config("HOST_PROTOCOL", "https")
 
-HOST_URL = f"{HOST_URL}:{HOST_PORT}"
+HOST_BASE_URL = f"{HOST_PROTOCOL}://{HOST_DOMAIN}"
+_is_http = HOST_PROTOCOL == "http" and HOST_PORT == 80
+_is_https = HOST_PROTOCOL == "https" and HOST_PORT == 443
+if not _is_http and not _is_https:
+    HOST_BASE_URL = f"{HOST_BASE_URL}:{HOST_PORT}"
+
 
 # Set by the Dockerfile; never set it for a native run
-IN_DOCKER = getenv_bool("IN_DOCKER", False)
+IN_DOCKER = config("IN_DOCKER", default=False)
 
 # Only enable the debug toolbar on a dev machine, outside of tests
-DEBUG_TOOLBAR = not TESTING and DEBUG and "localhost" in HOST_URL
+DEBUG_TOOLBAR = (
+    not TESTING and DEBUG and ("localhost" in HOST_DOMAIN or "127.0.0.1" in HOST_DOMAIN)  # type: ignore
+)
 
 # Application definition
 
@@ -99,7 +98,10 @@ if DEBUG_TOOLBAR:
                 "debug_toolbar.middleware.show_toolbar_with_docker"
             ),
         }
-
+    else:
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_TOOLBAR_CALLBACK": ("debug_toolbar.middleware.show_toolbar"),
+        }
 
 ROOT_URLCONF = "config.urls"
 
@@ -124,7 +126,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = cast(str, config("DATABASE_URL", default=""))
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(
