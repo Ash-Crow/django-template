@@ -4,6 +4,9 @@ set shell := ["bash", "-uc"]
 ## Variables initialized from env
 host_url := env("HOST_URL", "django.localhost")
 host_port := env("HOST_PORT", "8000")
+# Exported so the Docker web container runs as the host user (see compose.yaml)
+export HOST_UID := env("HOST_UID", `id -u`)
+export HOST_GID := env("HOST_GID", `id -g`)
 
 ## Recipes
 
@@ -13,8 +16,9 @@ default:
 
 # Pass a django command
 [group('Django')]
+[positional-arguments]
 django +command:
-    uv run python manage.py {{command}}
+    uv run python manage.py "$@"
 
 # Collect static files
 [group('Django')]
@@ -58,8 +62,8 @@ shell:
 # Build and start the Docker dev stack
 [group('Docker')]
 docker-up:
-    docker compose up --build -d
-    @echo "Starting Docker development server at http://{{host_url}}:{{host_port}}"
+    docker compose up --build -d --wait
+    @echo "Docker development server ready at http://{{host_url}}:{{host_port}}"
 
 # Stop the Docker dev stack
 [group('Docker')]
@@ -74,8 +78,9 @@ docker-logs service="web":
 alias ddj := docker-django
 # Pass a django command inside the web container
 [group('Docker')]
+[positional-arguments]
 docker-django +command:
-    docker compose exec web python manage.py {{command}}
+    docker compose exec web python manage.py "$@"
 
 # Open a bash shell inside the web container
 [group('Docker')]
