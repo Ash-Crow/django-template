@@ -33,8 +33,9 @@ uv run prek install
 To run a development instance directly on your machine, copy `.env.example` to `.env`. In that file, set `DEBUG=True` and fill `SECRET_KEY` with the output of `just generate_secret_key`. If `DATABASE_URL` is not set, the site uses a local SQLite database (`db.sqlite3`), so no database server is needed. Then apply the migrations with `just migrate`, create an admin account with `just createsuperuser`, and start the development server with `just run`. The site is then available on <http://django.localhost:8000> (set by `HOST_URL` and `HOST_PORT`), with the Django debug toolbar enabled.
 
 ```sh
-[ -f .env ] || cp .env.example .env  # then set DEBUG=True and SECRET_KEY
-just generate_secret_key             # prints a key to paste into .env
+[ -f .env ] || cp .env.example .env  # then set DEBUG=True
+just generate_secret_key
+# Copy the generated SECRET_KEY to the .env file, bound by single quotes.
 just migrate
 just createsuperuser
 just run
