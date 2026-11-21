@@ -17,7 +17,8 @@ A few details:
 ## Requirements
 
 - [uv](https://docs.astral.sh/uv/) **0.9.17 or later** (needed for the relative `exclude-newer` value used for the cooldown below.)
-- [just](https://just.systems/man/en/) **1.27.0 or later** (needed for the `[group()]` recipe attribute used in the `justfile`)
+- [just](https://just.systems/man/en/) **1.29.0 or later** (needed for the
+`[positional-arguments]` recipe attribute used in the `justfile`)
 - [GNU gettext](https://www.gnu.org/software/gettext/) (provides `msgfmt` and `xgettext`, needed by `just makemessages` and `just compilemessages`): `sudo apt install gettext`
 
 After cloning, install the dependencies and the git hooks:
