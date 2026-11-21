@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Dummy key, only used to run the checks and tests
+      SECRET_KEY: django-insecure-ci-only-key
     strategy:
       max-parallel: 4
       matrix:

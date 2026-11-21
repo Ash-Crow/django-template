@@ -49,7 +49,7 @@ if not _is_http and not _is_https:
 
 
 # Set by the Dockerfile; never set it for a native run
-IN_DOCKER = config("IN_DOCKER", default=False)
+IN_DOCKER = config("IN_DOCKER", default=False, cast=bool)
 
 # Only enable the debug toolbar on a dev machine, outside of tests
 DEBUG_TOOLBAR = (
@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",
+    "core",
 ]
 
 if DEBUG_TOOLBAR:
@@ -98,10 +100,7 @@ if DEBUG_TOOLBAR:
                 "debug_toolbar.middleware.show_toolbar_with_docker"
             ),
         }
-    else:
-        DEBUG_TOOLBAR_CONFIG = {
-            "SHOW_TOOLBAR_CALLBACK": ("debug_toolbar.middleware.show_toolbar"),
-        }
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -181,3 +180,5 @@ USE_TZ = True
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "static/"
+
+CONTACT_EMAIL = config("CONTACT_EMAIL", default="")

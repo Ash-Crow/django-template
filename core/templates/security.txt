@@ -1,0 +1,4 @@
+Contact: mailto:{{ contact_email }}
+Expires: {{ expires }}
+Preferred-Languages: fr, en
+Canonical: {{ request.scheme }}://{{ request.get_host }}/.well-known/security.txt
