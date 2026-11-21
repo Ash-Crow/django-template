@@ -51,6 +51,9 @@ HOST_PORT = os.getenv("HOST_PORT", "8000")
 
 HOST_URL = f"{HOST_URL}:{HOST_PORT}"
 
+# Set by the Dockerfile; never set it for a native run
+IN_DOCKER = getenv_bool("IN_DOCKER", False)
+
 # Only enable the debug toolbar on a dev machine, outside of tests
 DEBUG_TOOLBAR = not TESTING and DEBUG and "localhost" in HOST_URL
 
@@ -86,10 +89,16 @@ if DEBUG_TOOLBAR:
         "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
     INTERNAL_IPS = ["127.0.0.1"]
-    # Also show the toolbar when requests come through the Docker network gateway
-    DEBUG_TOOLBAR_CONFIG = {
-        "SHOW_TOOLBAR_CALLBACK": "debug_toolbar.middleware.show_toolbar_with_docker",
-    }
+    if IN_DOCKER:
+        # Also show the toolbar when requests come through the Docker network
+        # gateway. This callback trusts the .1 address of the server's network,
+        # which outside a container is usually the LAN gateway, so it is limited
+        # to container runs; native runs use the default INTERNAL_IPS check.
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_TOOLBAR_CALLBACK": (
+                "debug_toolbar.middleware.show_toolbar_with_docker"
+            ),
+        }
 
 
 ROOT_URLCONF = "config.urls"

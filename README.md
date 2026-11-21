@@ -33,8 +33,8 @@ uv run prek install
 To run a development instance directly on your machine, copy `.env.example` to `.env`. In that file, set `DEBUG=True` and fill `SECRET_KEY` with the output of `just generate_secret_key`. If `DATABASE_URL` is not set, the site uses a local SQLite database (`db.sqlite3`), so no database server is needed. Then apply the migrations with `just migrate`, create an admin account with `just createsuperuser`, and start the development server with `just run`. The site is then available on <http://django.localhost:8000> (set by `HOST_URL` and `HOST_PORT`), with the Django debug toolbar enabled.
 
 ```sh
-cp .env.example .env       # then set DEBUG=True and SECRET_KEY
-just generate_secret_key   # prints a key to paste into .env
+[ -f .env ] || cp .env.example .env  # then set DEBUG=True and SECRET_KEY
+just generate_secret_key             # prints a key to paste into .env
 just migrate
 just createsuperuser
 just run
@@ -47,8 +47,8 @@ A `compose.yaml` allows to run the site through Docker with a PostgreSQL databas
 The project directory is bind-mounted, so the development server reloads on code changes. Requires [Docker](https://docs.docker.com/get-docker/) with Compose **2.24 or later**.
 
 ```sh
-cp .env.example .env               # optional: compose provides dev defaults; if copied, set DEBUG=True
-just docker-up                     # build and start, migrations are applied on startup
+[ -f .env ] || cp .env.example .env  # optional: compose provides dev defaults; if copied, set DEBUG=True
+just docker-up                       # build and start; returns once migrations are applied and the server is up
 just docker-django createsuperuser
 ```
 
@@ -56,8 +56,9 @@ The site is then available on <http://django.localhost:8000> (port set by `HOST_
 
 - `just docker-logs`, `just docker-shell`, `just docker-dbshell` follow the logs, open a shell in the web container, or open `psql`.
 - `just docker-django <command>` (alias `ddj`) runs any `manage.py` command in the container.
-- After changing dependencies, run `just docker-up` again to rebuild the image.
+- Change dependencies with `uv add` / `uv remove` so `uv.lock` stays in sync (after editing `pyproject.toml` by hand, run `uv lock`), then run `just docker-up` again to rebuild the image. The build uses `uv sync --locked` and fails if the lockfile is out of date.
 - Database data persists in the `pgdata` volume; `docker compose down -v` resets it.
+- Inside the container (`IN_DOCKER`, set by the `Dockerfile`), the debug toolbar also accepts requests from the Docker network gateway. Native runs show it to `INTERNAL_IPS` (127.0.0.1) only.
 - The web container runs with your UID/GID (set by `just`, or `HOST_UID`/`HOST_GID` in `.env` when using `docker compose` directly), so files it creates stay editable.
 
 ## Dependency cooldown
