@@ -1,0 +1,52 @@
+# Development stack: Django (live reload) + PostgreSQL
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-django}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-django}
+      POSTGRES_DB: ${POSTGRES_DB:-django}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  web:
+    build: .
+    # Run as the host user so files written to the bind mount stay editable
+    # (`just` sets HOST_UID/HOST_GID from `id -u`/`id -g`)
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Password is passed via PGPASSWORD (read by libpq) rather than embedded in
+      # the URL, so it may contain URL-reserved characters (#, @, /, :, % ...).
+      DATABASE_URL: postgres://${POSTGRES_USER:-django}@db:5432/${POSTGRES_DB:-django}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-django}
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-dev-only-key}
+      # The host UID has no passwd entry in the image, so give it a writable HOME
+      HOME: /tmp
+    volumes:
+      - .:/app
+    ports:
+      # Loopback only: the dev server runs with DEBUG on, so keep it off the network
+      - "127.0.0.1:${HOST_PORT:-8000}:8000"
+    healthcheck:
+      # The port only opens after `migrate` succeeds (see `command`), so healthy => migrated
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), timeout=2).close()"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

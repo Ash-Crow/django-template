@@ -5,6 +5,7 @@ build/
 dist/
 wheels/
 *.egg-info
+.ruff_cache/
 
 # Virtual environments
 .venv
@@ -15,6 +16,9 @@ wheels/
 db.sqlite3
 htmlcov/
 staticfiles/
+
+# IDE-related
+.vscode/
 
 # AI stuff
 .claude/
