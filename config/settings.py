@@ -51,6 +51,9 @@ HOST_PORT = os.getenv("HOST_PORT", "8000")
 
 HOST_URL = f"{HOST_URL}:{HOST_PORT}"
 
+# Only enable the debug toolbar on a dev machine, outside of tests
+DEBUG_TOOLBAR = not TESTING and DEBUG and "localhost" in HOST_URL
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -62,8 +65,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-# Only add this on a dev machine, outside of tests
-if not TESTING and DEBUG and "localhost" in HOST_URL:
+if DEBUG_TOOLBAR:
     INSTALLED_APPS += [
         "debug_toolbar",
     ]
@@ -79,11 +81,15 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# Only add this on a dev machine, outside of tests
-if not TESTING and DEBUG and "localhost" in HOST_URL:
+if DEBUG_TOOLBAR:
     MIDDLEWARE += [
         "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
+    INTERNAL_IPS = ["127.0.0.1"]
+    # Also show the toolbar when requests come through the Docker network gateway
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": "debug_toolbar.middleware.show_toolbar_with_docker",
+    }
 
 
 ROOT_URLCONF = "config.urls"

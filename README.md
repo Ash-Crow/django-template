@@ -26,6 +26,23 @@ uv sync
 uv run prek install
 ```
 
+## Docker (development)
+
+A `compose.yaml` runs the site with a PostgreSQL database. The project directory is bind-mounted, so the development server reloads on code changes. Requires [Docker](https://docs.docker.com/get-docker/) with Compose **2.24 or later**.
+
+```sh
+cp .env.example .env               # optional: compose provides dev defaults
+just docker-up                     # build and start, migrations are applied on startup
+just docker-django createsuperuser
+```
+
+The site is then available on <http://django.localhost:8000> (port set by `HOST_PORT`).
+
+- `just docker-logs`, `just docker-shell`, `just docker-dbshell` follow the logs, open a shell in the web container, or open `psql`.
+- `just docker-django <command>` (alias `ddj`) runs any `manage.py` command in the container.
+- After changing dependencies, run `just docker-up` again to rebuild the image.
+- Database data persists in the `pgdata` volume; `docker compose down -v` resets it.
+
 ## Dependency cooldown
 
 To reduce exposure to supply-chain attacks, package versions published less than 7 days ago are ignored:

@@ -7,7 +7,7 @@ host_port := env("HOST_PORT", "8000")
 
 ## Recipes
 
-# List the available recipes
+[private]
 default:
     @just --list
 
@@ -54,6 +54,48 @@ runserver host_url=host_url host_port=host_port:
 [group('Django')]
 shell:
     just django shell
+
+# Build and start the Docker dev stack
+[group('Docker')]
+docker-up:
+    docker compose up --build -d
+    @echo "Starting Docker development server at http://{{host_url}}:{{host_port}}"
+
+# Stop the Docker dev stack
+[group('Docker')]
+docker-down:
+    docker compose down
+
+# Follow the logs of a Docker service
+[group('Docker')]
+docker-logs service="web":
+    docker compose logs -f {{service}}
+
+alias ddj := docker-django
+# Pass a django command inside the web container
+[group('Docker')]
+docker-django +command:
+    docker compose exec web python manage.py {{command}}
+
+# Open a bash shell inside the web container
+[group('Docker')]
+docker-shell:
+    docker compose exec web bash
+
+# Open a psql shell on the Docker database
+[group('Docker')]
+docker-dbshell:
+    docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+
+# Compile internationalization messages
+[group('Internationalization')]
+compilemessages:
+    uv run python manage.py compilemessages --ignore=.venv
+
+# Update internationalization strings
+[group('Internationalization')]
+makemessages:
+    uv run python manage.py makemessages -l fr --no-location --ignore=manage.py
 
 # Check test coverage
 [group('Tests')]
