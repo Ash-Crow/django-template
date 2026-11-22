@@ -46,6 +46,11 @@ class SeoFilesTests(TestCase):
         response = self.client.get("/.well-known/security.txt", secure=True)
         self.assertContains(response, "Contact: mailto:a%3Fb@example.com")
 
+    @override_settings(CONTACT_EMAIL='"not@me;"@example.org')
+    def test_security_txt_contact_quoted_local_part(self):
+        response = self.client.get("/.well-known/security.txt", secure=True)
+        self.assertContains(response, "Contact: mailto:%22not%40me%3B%22@example.org")
+
     @override_settings(CONTACT_EMAIL="")
     def test_security_txt_without_contact(self):
         response = self.client.get("/.well-known/security.txt")

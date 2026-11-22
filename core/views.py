@@ -38,7 +38,13 @@ class SecurityTxtView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         expires = timezone.now().replace(microsecond=0) + timedelta(days=180)
-        # Percent-encode for the mailto URI (RFC 6068), keeping allowed delimiters.
-        context["contact_email"] = quote(settings.CONTACT_EMAIL, safe="!$'()*+,;:@")
+        # Percent-encode each part for the mailto URI (RFC 6068): only the
+        # separator @ stays literal; "&", ";", "=" and an @ in a quoted local
+        # part are encoded.
+        local, at, domain = settings.CONTACT_EMAIL.rpartition("@")
+        safe = "!$'()*+,:"
+        context["contact_email"] = (
+            quote(local, safe=safe) + at + quote(domain, safe=safe)
+        )
         context["expires"] = expires.strftime("%Y-%m-%dT%H:%M:%SZ")
         return context
