@@ -12,7 +12,7 @@ A few details:
   - [djLint](https://djlint.com/) is used for linting HTML code
   - [bandit](https://pypi.org/project/bandit/) is used to check for security issues
   - [deptry](https://deptry.com/) is used to check for dependency issues
-- Config settings are defined through environment variables.
+- Config settings are defined through environment variables, loaded via [python-decouple](https://pypi.org/project/python-decouple/).
 
 ## Requirements
 
@@ -30,7 +30,7 @@ uv run prek install
 
 ## Local development
 
-To run a development instance directly on your machine, copy `.env.example` to `.env`. In that file, set `DEBUG=True` and fill `SECRET_KEY` with the output of `just generate_secret_key`. If `DATABASE_URL` is not set, the site uses a local SQLite database (`db.sqlite3`), so no database server is needed. Then apply the migrations with `just migrate`, create an admin account with `just createsuperuser`, and start the development server with `just run`. The site is then available on <http://django.localhost:8000> (set by `HOST_URL` and `HOST_PORT`), with the Django debug toolbar enabled.
+To run a development instance directly on your machine, copy `.env.example` to `.env`. In that file, set `DEBUG=True` and fill `SECRET_KEY` with the output of `just generate_secret_key` (`SECRET_KEY` is mandatory: without it, `manage.py` refuses to start). If `DATABASE_URL` is not set, the site uses a local SQLite database (`db.sqlite3`), so no database server is needed. Then apply the migrations with `just migrate`, create an admin account with `just createsuperuser`, and start the development server with `just run`. The site is then available on <http://django.localhost:8000> (set by `HOST_DOMAIN` and `HOST_PORT`), with the Django debug toolbar enabled.
 
 ```sh
 [ -f .env ] || cp .env.example .env  # then set DEBUG=True
@@ -40,6 +40,25 @@ just migrate
 just createsuperuser
 just run
 ```
+
+## Site address
+
+The public address of the site is built from three settings, and is available in the code as `settings.HOST_BASE_URL`:
+
+- `HOST_DOMAIN` (defaults to the first entry of `ALLOWED_HOSTS`);
+- `HOST_PORT` (defaults to `8000`), omitted from `HOST_BASE_URL` when it is the default port of the protocol (80 for http, 443 for https);
+- `HOST_PROTOCOL` (defaults to `https`; `.env.example` sets it to `http` for the development server).
+
+The debug toolbar is only enabled when `DEBUG` is on, outside of tests, and when `HOST_DOMAIN` is a local address (`localhost` or `127.0.0.1`).
+
+## Default routes
+
+The `core` app provides the files expected at the root of any website:
+
+- `/favicon.ico` redirects to the static file `core/static/favicon/favicon.ico` (replace it with your own icon).
+- `/robots.txt` is rendered from `core/templates/robots.txt`: it allows the main search engines, slows down the other bots, blocks a few aggressive crawlers and points to the sitemap. Edit the template to fit your site.
+- `/sitemap.xml` is served by [`django.contrib.sitemaps`](https://docs.djangoproject.com/en/6.0/ref/contrib/sitemaps/). It is empty by default: declare your `Sitemap` classes in the `sitemaps` dictionary of its route in `config/urls.py`.
+- `/.well-known/security.txt` is an [RFC 9116](https://www.rfc-editor.org/rfc/rfc9116) file, with an `Expires` date always 180 days ahead. It needs `CONTACT_EMAIL` and returns a 404 when that setting is empty.
 
 ## Docker (development)
 
@@ -68,5 +87,6 @@ To reduce exposure to supply-chain attacks, package versions published less than
 
 - uv: `exclude-newer = "7 days"` in the `[tool.uv]` section of `pyproject.toml`. This applies to every resolution (`uv lock`, `uv add`, `just upgrade`…).
 - prek: `just upgrade` runs `prek update --cooldown-days 7`, so hook revisions are only bumped to tags at least 7 days old.
+- GitHub Actions: `just upgrade` also runs [gha-update](https://github.com/davidism/gha-update), which pins each action in `.github/workflows/` to the commit SHA of its latest tag (`actions/checkout@<sha> # v7.0.1`). gha-update has no cooldown option (see [issue](https://github.com/davidism/gha-update/issues/34)), so **no cooldown applies to actions**: review the diff before committing. Set `GITHUB_TOKEN` to avoid GitHub API rate limits.
 
 If you urgently need a newer version (e.g. a security fix), override the cutoff for that package only, for instance `uv lock --upgrade-package django --exclude-newer-package django=2026-10-07`.
