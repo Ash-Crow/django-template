@@ -1,4 +1,4 @@
-Contact: mailto:{{ contact_email }}
+{% autoescape off %}Contact: mailto:{{ contact_email }}
 Expires: {{ expires }}
 Preferred-Languages: fr, en
-Canonical: {{ request.scheme }}://{{ request.get_host }}/.well-known/security.txt
+Canonical: https://{{ request.get_host }}/.well-known/security.txt{% endautoescape %}

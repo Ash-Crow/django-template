@@ -1,4 +1,5 @@
 from datetime import timedelta
+from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -37,6 +38,7 @@ class SecurityTxtView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         expires = timezone.now().replace(microsecond=0) + timedelta(days=180)
-        context["contact_email"] = settings.CONTACT_EMAIL
+        # Percent-encode for the mailto URI (RFC 6068), keeping allowed delimiters.
+        context["contact_email"] = quote(settings.CONTACT_EMAIL, safe="!$'()*+,;:@")
         context["expires"] = expires.strftime("%Y-%m-%dT%H:%M:%SZ")
         return context
