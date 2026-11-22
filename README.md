@@ -87,5 +87,6 @@ To reduce exposure to supply-chain attacks, package versions published less than
 
 - uv: `exclude-newer = "7 days"` in the `[tool.uv]` section of `pyproject.toml`. This applies to every resolution (`uv lock`, `uv add`, `just upgrade`…).
 - prek: `just upgrade` runs `prek update --cooldown-days 7`, so hook revisions are only bumped to tags at least 7 days old.
+- GitHub Actions: `just upgrade` also runs [gha-update](https://github.com/davidism/gha-update), which pins each action in `.github/workflows/` to the commit SHA of its latest tag (`actions/checkout@<sha> # v7.0.1`). gha-update has no cooldown option (see [issue](https://github.com/davidism/gha-update/issues/34)), so **no cooldown applies to actions**: review the diff before committing. Set `GITHUB_TOKEN` to avoid GitHub API rate limits.
 
 If you urgently need a newer version (e.g. a security fix), override the cutoff for that package only, for instance `uv lock --upgrade-package django --exclude-newer-package django=2026-10-07`.

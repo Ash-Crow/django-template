@@ -18,6 +18,7 @@ dev = [
     "deptry>=0.25.1",
     "django-debug-toolbar>=7.0.0",
     "djlint>=1.43.1",
+    "gha-update>=0.2.0",
     "ipython>=9.15.0",
     "pip-licenses>=5.5.5",
     "prek>=0.5.4",

@@ -139,8 +139,9 @@ licenses-check:
 generate_secret_key:
     uv run python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 
-# Upgrade versions of dependencies
+# Upgrade versions of dependencies, prek hooks and GitHub Actions
 [group('Utils')]
 upgrade:
     uv lock --upgrade
     uv run prek update --cooldown-days 7
+    uv run gha-update
